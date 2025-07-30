@@ -1,0 +1,148 @@
+create database bengkel1;
+use bengkel1;
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nama VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('customer', 'admin', 'pegawai') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE layanan (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nama_layanan VARCHAR(100) NOT NULL,
+    deskripsi TEXT,
+    harga DECIMAL(10,2) NOT NULL
+);
+CREATE TABLE jadwal_nonaktif (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tanggal DATE NOT NULL,
+    jam TIME NOT NULL,
+    alasan TEXT
+);
+CREATE TABLE tagihan (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_booking INT NOT NULL,
+    rincian TEXT,
+    total DECIMAL(10,2) NOT NULL,
+    status_bayar ENUM('belum', 'sudah') DEFAULT 'belum',
+    tanggal_tagihan TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_booking) REFERENCES booking(id)
+);
+-- Tabel paket hemat
+CREATE TABLE paket (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nama_paket VARCHAR(100) NOT NULL,
+    deskripsi TEXT,
+    harga_total DECIMAL(10,2) NOT NULL
+);
+
+-- Relasi antara paket dan layanan
+CREATE TABLE paket_layanan (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_paket INT NOT NULL,
+    id_layanan INT NOT NULL,
+    FOREIGN KEY (id_paket) REFERENCES paket(id),
+    FOREIGN KEY (id_layanan) REFERENCES layanan(id)
+);
+CREATE TABLE booking (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT NOT NULL,
+    id_layanan INT NOT NULL,
+    tanggal DATE NOT NULL,
+    jam TIME NOT NULL,
+    status ENUM('pending', 'diterima', 'dikerjakan', 'selesai', 'dibatalkan') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_user) REFERENCES users(id),
+    FOREIGN KEY (id_layanan) REFERENCES layanan(id)
+);
+ALTER TABLE booking ADD COLUMN id_paket INT DEFAULT NULL;
+ALTER TABLE booking 
+MODIFY id_layanan INT NULL,
+MODIFY id_paket INT NULL;
+
+ALTER TABLE booking 
+DROP FOREIGN KEY booking_ibfk_2;
+
+ALTER TABLE booking 
+ADD CONSTRAINT booking_ibfk_2 FOREIGN KEY (id_layanan) REFERENCES layanan(id) ON DELETE SET NULL;
+
+ALTER TABLE users ADD COLUMN telepon VARCHAR(15) AFTER email;
+ALTER TABLE booking ADD COLUMN tanggal_selesai DATE DEFAULT NULL;
+ALTER TABLE tagihan ADD COLUMN tanggal_bayar DATETIME DEFAULT NULL;
+
+
+
+CREATE DATABASE bengkel1;
+USE bengkel1;
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nama VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    telepon VARCHAR(15),
+    password VARCHAR(255) NOT NULL,
+    role ENUM('customer', 'admin', 'pegawai') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE layanan (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nama_layanan VARCHAR(100) NOT NULL,
+    deskripsi TEXT,
+    harga DECIMAL(10,2) NOT NULL
+);
+
+CREATE TABLE paket (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nama_paket VARCHAR(100) NOT NULL,
+    deskripsi TEXT,
+    harga_total DECIMAL(10,2) NOT NULL
+);
+
+CREATE TABLE paket_layanan (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_paket INT NOT NULL,
+    id_layanan INT NOT NULL,
+    FOREIGN KEY (id_paket) REFERENCES paket(id),
+    FOREIGN KEY (id_layanan) REFERENCES layanan(id)
+);
+
+CREATE TABLE booking (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT NOT NULL,
+    id_layanan INT NULL,
+    id_paket INT NULL,
+    tanggal DATE NOT NULL,
+    jam TIME NOT NULL,
+    tanggal_selesai DATE DEFAULT NULL,
+    status ENUM('pending', 'diterima', 'dikerjakan', 'selesai', 'dibatalkan') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_user) REFERENCES users(id),
+    FOREIGN KEY (id_layanan) REFERENCES layanan(id) ON DELETE SET NULL,
+    FOREIGN KEY (id_paket) REFERENCES paket(id)
+);
+
+CREATE TABLE tagihan (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_booking INT NOT NULL,
+    rincian TEXT,
+    total DECIMAL(10,2) NOT NULL,
+    status_bayar ENUM('belum', 'sudah') DEFAULT 'belum',
+    tanggal_tagihan TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    tanggal_bayar DATETIME DEFAULT NULL,
+    FOREIGN KEY (id_booking) REFERENCES booking(id)
+);
+
+CREATE TABLE jadwal_nonaktif (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tanggal DATE NOT NULL,
+    jam TIME NOT NULL,
+    alasan TEXT
+);
+
+ALTER TABLE booking
+ADD COLUMN merk_mobil VARCHAR(100) NULL AFTER id_user,
+ADD COLUMN tahun_mobil INT NULL AFTER merk_mobil,
+ADD COLUMN transmisi ENUM('manual', 'otomatis') NULL AFTER tahun_mobil,
+ADD COLUMN warna_mobil VARCHAR(50) NULL AFTER transmisi;
